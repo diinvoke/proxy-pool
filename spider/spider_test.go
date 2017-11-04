@@ -3,7 +3,7 @@ package spider
 import (
 	"testing"
 
-	"github.com/Agzdjy/go-proxy/storage"
+	"github.com/Agzdjy/proxy-pool/storage"
 	"github.com/go-redis/redis"
 )
 

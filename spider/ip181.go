@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/Agzdjy/go-proxy/model"
+	"github.com/Agzdjy/proxy-pool/model"
 
-	"github.com/Agzdjy/go-proxy/storage"
+	"github.com/Agzdjy/proxy-pool/storage"
 	"github.com/PuerkitoBio/goquery"
 )
 

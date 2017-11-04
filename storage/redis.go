@@ -3,7 +3,7 @@ package storage
 import (
 	"encoding/json"
 
-	"github.com/Agzdjy/go-proxy/model"
+	"github.com/Agzdjy/proxy-pool/model"
 	"github.com/go-redis/redis"
 )
 

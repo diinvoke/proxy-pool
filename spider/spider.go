@@ -1,7 +1,7 @@
 package spider
 
 import (
-	"github.com/Agzdjy/go-proxy/storage"
+	"github.com/Agzdjy/proxy-pool/storage"
 )
 
 type Spider interface {

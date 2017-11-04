@@ -1,5 +1,5 @@
-hash: 1323ace2e3b551fed4ff1a84589fe7aa9e7c33bd3601540e2d9b468887fd0c1d
-updated: 2017-11-03T23:23:14.028444+08:00
+hash: 401c134a26d6174632aae079ab2b3f211e89c1abc6e7aa25e416365aede1f037
+updated: 2017-11-04T10:32:00.30678+08:00
 imports:
 - name: github.com/andybalholm/cascadia
   version: 349dd0209470eabd9514242c688c403c0926d266
@@ -11,8 +11,6 @@ imports:
   - internal/hashtag
   - internal/pool
   - internal/proto
-- name: github.com/pingcap/check
-  version: 4c65d06b828d91184c8b6bd94d700143b0be3588
 - name: github.com/PuerkitoBio/goquery
   version: e1271ee34c6a305e38566ecd27ae374944907ee9
 - name: golang.org/x/net

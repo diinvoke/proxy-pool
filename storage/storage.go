@@ -1,7 +1,7 @@
 package storage
 
 import (
-	"github.com/Agzdjy/go-proxy/model"
+	"github.com/Agzdjy/proxy-pool/model"
 	"github.com/go-redis/redis"
 )
 
