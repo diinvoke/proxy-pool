@@ -19,7 +19,8 @@ func genKey(protocol string) string {
 }
 
 func decodeValue(ipStr string) (ip *model.IP, err error) {
-	err = json.Unmarshal([]byte(ipStr), &ip)
+	ip = &model.IP{}
+	err = json.Unmarshal([]byte(ipStr), ip)
 	if err != nil {
 		return nil, err
 	}
@@ -33,7 +34,6 @@ func encodeValue(ip *model.IP) string {
 
 func (r *Redis) Save(ip *model.IP) error {
 	key := genKey(ip.Protocol)
-	println(key)
 	err := r.client.SAdd(key, encodeValue(ip)).Err()
 	return err
 }

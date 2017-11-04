@@ -36,7 +36,7 @@ func filterRecord(response *http.Response, store storage.Storage) (count int, er
 		return 0, err
 	}
 
-	trs := doc.Find("tbody").Find("tr.warning")
+	trs := doc.Find("tbody").Find("tr").Not("tr.active")
 
 	trs.Each(func(index int, tr *goquery.Selection) {
 		td := tr.Find("td")
