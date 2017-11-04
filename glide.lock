@@ -1,0 +1,23 @@
+hash: 1323ace2e3b551fed4ff1a84589fe7aa9e7c33bd3601540e2d9b468887fd0c1d
+updated: 2017-11-03T23:23:14.028444+08:00
+imports:
+- name: github.com/andybalholm/cascadia
+  version: 349dd0209470eabd9514242c688c403c0926d266
+- name: github.com/go-redis/redis
+  version: d0f86971b5d61de9cebd2616b932acb7ba14d957
+  subpackages:
+  - internal
+  - internal/consistenthash
+  - internal/hashtag
+  - internal/pool
+  - internal/proto
+- name: github.com/pingcap/check
+  version: 4c65d06b828d91184c8b6bd94d700143b0be3588
+- name: github.com/PuerkitoBio/goquery
+  version: e1271ee34c6a305e38566ecd27ae374944907ee9
+- name: golang.org/x/net
+  version: a04bdaca5b32abe1c069418fb7088ae607de5bd0
+  subpackages:
+  - html
+  - html/atom
+testImports: []
