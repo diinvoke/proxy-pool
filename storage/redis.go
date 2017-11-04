@@ -2,6 +2,7 @@ package storage
 
 import (
 	"encoding/json"
+	"strings"
 
 	"github.com/Agzdjy/proxy-pool/model"
 	"github.com/go-redis/redis"
@@ -14,7 +15,7 @@ type Redis struct {
 var _ Storage = &Redis{}
 
 func genKey(protocol string) string {
-	return "ip_proxy:" + protocol
+	return "ip_proxy:" + strings.ToLower(protocol)
 }
 
 func decodeValue(ipStr string) (ip *model.IP, err error) {
