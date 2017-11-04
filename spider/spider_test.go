@@ -23,8 +23,8 @@ func TestDo(t *testing.T) {
 		return
 	}
 
-	if count != 100 {
-		t.Errorf("spider run want got 100 but got %d", count)
+	if count < 100 {
+		t.Errorf("spider run want >= 100 but got %d", count)
 		return
 	}
 }

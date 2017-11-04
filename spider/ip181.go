@@ -37,28 +37,54 @@ func filterRecord(response *http.Response, store storage.Storage) (count int, er
 	}
 
 	trs := doc.Find("tbody").Find("tr").Not("tr.active")
+	num := len(trs.Nodes)
+
+	done := make(chan string, num-1)
+	stop := make(chan struct{})
 
 	trs.Each(func(index int, tr *goquery.Selection) {
 		td := tr.Find("td")
 		protocolStr := td.Eq(3).Text()
 		protocols := strings.Split(protocolStr, ",")
 
-		store.Save(&model.IP{
+		httpIp := &model.IP{
 			Address:  td.Eq(0).Text(),
 			Port:     td.Eq(1).Text(),
 			Protocol: protocols[0],
-		})
+		}
+		go saveToStorage(httpIp, store, stop, done)
 
 		if len(protocols) > 1 {
-			store.Save(&model.IP{
+			httpsIp := &model.IP{
 				Address:  td.Eq(0).Text(),
 				Port:     td.Eq(1).Text(),
 				Protocol: protocols[1],
-			})
+			}
+			go saveToStorage(httpsIp, store, stop, done)
+			count++
 		}
 
 		count++
 	})
 
+	for i := 0; i < count; i += 1 {
+		<-done
+	}
+	close(stop)
 	return count, err
+}
+
+func saveToStorage(ip *model.IP, store storage.Storage, stop <-chan struct{}, done chan string) error {
+	err := store.Save(ip)
+
+	select {
+	case <-stop:
+		_, isClose := <-done
+		if !isClose {
+			close(done)
+		}
+		return nil
+	case done <- "save ok":
+	}
+	return err
 }
