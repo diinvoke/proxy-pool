@@ -7,7 +7,7 @@ import (
 	"github.com/go-redis/redis"
 )
 
-var spider Spider = &ip181{}
+var spider Spider = &Ip181{}
 
 func TestDo(t *testing.T) {
 	store := storage.NewRedisClient(&redis.Options{

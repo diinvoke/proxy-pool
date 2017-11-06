@@ -43,9 +43,9 @@ func TestRange(t *testing.T) {
 }
 
 func TestDel(t *testing.T) {
-	TestRange(t)
+	rangeIp, _ := storage.RangeOne("https")
 
-	ok := storage.Del("https")
+	ok := storage.Del(rangeIp)
 	if !ok {
 		t.Error("del failed")
 	}

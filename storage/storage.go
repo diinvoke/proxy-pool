@@ -7,8 +7,9 @@ import (
 
 type Storage interface {
 	Save(ip *model.IP) error
-	Del(protocol string) bool
+	Del(ip *model.IP) bool
 	RangeOne(protocol string) (ip *model.IP, err error)
+	Close() error
 }
 
 func NewRedisClient(options *redis.Options) *Redis {

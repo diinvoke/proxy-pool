@@ -10,11 +10,11 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-type ip181 struct{}
+type Ip181 struct{}
 
-var _ Spider = &ip181{}
+var _ Spider = &Ip181{}
 
-func (ip181 *ip181) Do(url string, store storage.Storage) (count int, err error) {
+func (ip181 *Ip181) Do(url string, store storage.Storage) (count int, err error) {
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -37,9 +37,8 @@ func filterRecord(response *http.Response, store storage.Storage) (count int, er
 	}
 
 	trs := doc.Find("tbody").Find("tr").Not("tr.active")
-	num := len(trs.Nodes)
 
-	done := make(chan string, num-1)
+	done := make(chan string, 10)
 	stop := make(chan struct{})
 
 	trs.Each(func(index int, tr *goquery.Selection) {

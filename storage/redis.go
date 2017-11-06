@@ -38,9 +38,10 @@ func (r *Redis) Save(ip *model.IP) error {
 	return err
 }
 
-func (r *Redis) Del(protocol string) bool {
-	key := genKey(protocol)
-	err := r.client.Del(key).Err()
+func (r *Redis) Del(ip *model.IP) bool {
+	key := genKey(ip.Protocol)
+	value := encodeValue(ip)
+	err := r.client.SRem(key, value).Err()
 	if err != nil {
 		return false
 	}
@@ -57,4 +58,8 @@ func (r *Redis) RangeOne(protocol string) (ip *model.IP, err error) {
 
 	ip, err = decodeValue(val)
 	return
+}
+
+func (r *Redis) Close() error {
+	return r.client.Close()
 }
