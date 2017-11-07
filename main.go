@@ -1,12 +1,11 @@
 package proxypool
 
 import (
-	"net/http"
-	"net/url"
+	"time"
 
 	"crypto/tls"
-
-	"time"
+	"net/http"
+	"net/url"
 
 	"github.com/Agzdjy/proxy-pool/model"
 	"github.com/Agzdjy/proxy-pool/storage"
@@ -41,7 +40,7 @@ func Check(proxy string) bool {
 	}
 	client := &http.Client{
 		Transport: tr,
-		Timeout:   time.Second * 5,
+		Timeout:   time.Millisecond * 200,
 	}
 
 	resq, err := client.Get("http://ip.gs/")

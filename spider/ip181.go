@@ -20,6 +20,7 @@ func (ip181 *Ip181) Do(url string, store storage.Storage) (count int, err error)
 	if err != nil {
 		return 0, err
 	}
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36")
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -49,7 +50,7 @@ func filterRecord(response *http.Response, store storage.Storage) (count int, er
 		httpIp := &model.IP{
 			Address:  td.Eq(0).Text(),
 			Port:     td.Eq(1).Text(),
-			Protocol: protocols[0],
+			Protocol: strings.ToLower(protocols[0]),
 		}
 		go saveToStorage(httpIp, store, stop, done)
 
@@ -57,7 +58,7 @@ func filterRecord(response *http.Response, store storage.Storage) (count int, er
 			httpsIp := &model.IP{
 				Address:  td.Eq(0).Text(),
 				Port:     td.Eq(1).Text(),
-				Protocol: protocols[1],
+				Protocol: strings.ToLower(protocols[1]),
 			}
 			go saveToStorage(httpsIp, store, stop, done)
 			count++
