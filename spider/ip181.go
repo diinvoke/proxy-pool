@@ -7,6 +7,7 @@ import (
 	"github.com/Agzdjy/proxy-pool/model"
 
 	"github.com/Agzdjy/proxy-pool/storage"
+	"github.com/Agzdjy/proxy-pool/util"
 	"github.com/PuerkitoBio/goquery"
 )
 
@@ -74,8 +75,10 @@ func filterRecord(response *http.Response, store storage.Storage) (count int, er
 	return count, err
 }
 
-func saveToStorage(ip *model.IP, store storage.Storage, stop <-chan struct{}, done chan string) error {
-	err := store.Save(ip)
+func saveToStorage(ip *model.IP, store storage.Storage, stop <-chan struct{}, done chan string) (err error) {
+	if util.Check(ip.Protocol + "://" + ip.Address + ":" + ip.Port) {
+		err = store.Save(ip)
+	}
 
 	select {
 	case <-stop:
