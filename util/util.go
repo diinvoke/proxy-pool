@@ -20,7 +20,7 @@ func Check(proxy string) bool {
 	}
 	client := &http.Client{
 		Transport: tr,
-		Timeout:   time.Millisecond * 200,
+		Timeout:   time.Millisecond * 500,
 	}
 
 	resq, err := client.Get("http://ip.gs/")

@@ -8,8 +8,9 @@ import (
 
 var stor storage.Storage = nil
 
-func init() {
-	stor = initStorage()
+// init storage and spider
+func InitData(configPath string) {
+	stor = initStorage(configPath)
 	initSpider(stor)
 }
 

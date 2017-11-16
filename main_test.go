@@ -2,8 +2,12 @@ package proxypool
 
 import "testing"
 
+func init() {
+	InitData("./config.json")
+}
+
 func TestRange(t *testing.T) {
-	rangeIp := Range("https")
+	rangeIp := Range("http")
 
 	if rangeIp == nil || rangeIp.Address == "" {
 		t.Error("range no one")

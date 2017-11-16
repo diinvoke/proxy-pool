@@ -10,13 +10,11 @@ import (
 	"github.com/go-redis/redis"
 )
 
-const configFile = "./config.json"
-
 var ip181Spider = &spider.Ip181{}
 
-func readJson() map[string]string {
+func readJson(configPath string) map[string]string {
 	jsonData := map[string]string{}
-	bytes, err := ioutil.ReadFile(configFile)
+	bytes, err := ioutil.ReadFile(configPath)
 	if err != nil {
 		panic("config is undefined")
 	}
@@ -28,8 +26,8 @@ func readJson() map[string]string {
 	return jsonData
 }
 
-func initStorage() storage.Storage {
-	config := readJson()
+func initStorage(configPath string) storage.Storage {
+	config := readJson(configPath)
 	store := config["store"]
 	var stor storage.Storage
 
