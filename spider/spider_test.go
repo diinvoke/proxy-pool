@@ -19,7 +19,7 @@ func TestDo(t *testing.T) {
 	count, err := spider.Do("http://www.ip181.com/", store)
 
 	if err != nil {
-		t.Errorf("spider do error", err)
+		t.Error("spider do error", err)
 		return
 	}
 

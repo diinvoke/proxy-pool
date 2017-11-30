@@ -10,8 +10,6 @@ import (
 	"github.com/go-redis/redis"
 )
 
-var ip181Spider = &spider.Ip181{}
-
 func readJson(configPath string) map[string]string {
 	jsonData := map[string]string{}
 	bytes, err := ioutil.ReadFile(configPath)

@@ -8,6 +8,13 @@ ip 代理池
 go get github.com/Agzdjy/proxy-pool
 ```
 
+### 安装依赖
+
+```shell
+glide install
+```
+[glide](https://github.com/Masterminds/glide)介绍
+
 ### 使用
 
 #### 添加存储配置文件config.json
