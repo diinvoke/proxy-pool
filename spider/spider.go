@@ -5,5 +5,5 @@ import (
 )
 
 type Spider interface {
-	Do(url string, store storage.Storage) (count int, err error)
+	Do(url string, store storage.Storage) error
 }

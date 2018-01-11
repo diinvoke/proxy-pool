@@ -3,8 +3,13 @@ package spider
 import (
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/Agzdjy/proxy-pool/model"
+
+	"sync"
+
+	"fmt"
 
 	"github.com/Agzdjy/proxy-pool/storage"
 	"github.com/Agzdjy/proxy-pool/util"
@@ -15,79 +20,88 @@ type Ip181 struct{}
 
 var _ Spider = &Ip181{}
 
-func (ip181 *Ip181) Do(url string, store storage.Storage) (count int, err error) {
-	client := &http.Client{}
-	req, err := http.NewRequest("GET", url, nil)
+func (ip181 *Ip181) Do(url string, store storage.Storage) error {
+	resp, err := util.HttpGet(url)
 	if err != nil {
-		return 0, err
+		return err
 	}
-	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36")
 
-	resp, err := client.Do(req)
-	if err != nil {
-		return 0, err
+	errorChan := make(chan error)
+	doneChan := make(chan struct{})
+
+	go func() {
+		filterRecord(resp, store, errorChan, doneChan)
+	}()
+
+	timeout := time.After(2 * time.Second)
+
+	select {
+	case <-doneChan:
+		fmt.Println("init ip181 success")
+		return nil
+	case err := <-errorChan:
+		return err
+	case <-timeout:
+		fmt.Println("init ip181 timeout")
+		return nil
 	}
-	defer resp.Body.Close()
-
-	return filterRecord(resp, store)
+	return nil
 }
 
-func filterRecord(response *http.Response, store storage.Storage) (count int, err error) {
-	doc, err := goquery.NewDocumentFromResponse(response)
+func filterRecord(resp *http.Response, store storage.Storage, errChan chan error, done chan struct{}) {
+	var wg sync.WaitGroup
+
+	doc, err := goquery.NewDocumentFromResponse(resp)
 	if err != nil {
-		return 0, err
+		errChan <- err
 	}
 
 	trs := doc.Find("tbody").Find("tr").Not("tr.active")
 
-	done := make(chan string, 10)
-	stop := make(chan struct{})
-
 	trs.Each(func(index int, tr *goquery.Selection) {
 		td := tr.Find("td")
-		protocolStr := td.Eq(3).Text()
-		protocols := strings.Split(protocolStr, ",")
+		ipModels := getIpModels(td)
 
-		httpIp := &model.IP{
-			Address:  td.Eq(0).Text(),
-			Port:     td.Eq(1).Text(),
-			Protocol: strings.ToLower(protocols[0]),
+		wg.Add(len(ipModels))
+		go checkAndSave(ipModels[0], store, &wg, errChan)
+		if len(ipModels) > 1 {
+			go checkAndSave(ipModels[1], store, &wg, errChan)
 		}
-		go saveToStorage(httpIp, store, stop, done)
-
-		if len(protocols) > 1 {
-			httpsIp := &model.IP{
-				Address:  td.Eq(0).Text(),
-				Port:     td.Eq(1).Text(),
-				Protocol: strings.ToLower(protocols[1]),
-			}
-			go saveToStorage(httpsIp, store, stop, done)
-			count++
-		}
-
-		count++
 	})
 
-	for i := 0; i < count; i += 1 {
-		<-done
-	}
-	close(stop)
-	return count, err
+	wg.Wait()
+	done <- struct{}{}
 }
 
-func saveToStorage(ip *model.IP, store storage.Storage, stop <-chan struct{}, done chan string) (err error) {
-	if util.Check(ip.Protocol + "://" + ip.Address + ":" + ip.Port) {
-		err = store.Save(ip)
+func getIpModels(td *goquery.Selection) []*model.IP {
+	protocol := td.Eq(3).Text()
+	protocols := strings.Split(protocol, ",")
+
+	ipModels := []*model.IP{genIpModel(td, protocols[0])}
+	if len(protocols) > 1 {
+		ipModels = append(ipModels, genIpModel(td, protocols[1]))
 	}
 
-	select {
-	case <-stop:
-		_, isClose := <-done
-		if !isClose {
-			close(done)
-		}
-		return nil
-	case done <- "save ok":
+	return ipModels
+}
+
+func genIpModel(selection *goquery.Selection, protocol string) *model.IP {
+	return &model.IP{
+		Address:  selection.Eq(0).Text(),
+		Port:     selection.Eq(1).Text(),
+		Protocol: strings.ToLower(protocol),
 	}
-	return err
+}
+
+func checkAndSave(ip *model.IP, store storage.Storage, wg *sync.WaitGroup, errChan chan error) {
+	defer wg.Done()
+
+	checkUrl := ip.Protocol + "://" + ip.Address + ":" + ip.Port
+	if !util.Check(checkUrl) {
+		return
+	}
+	err := store.Save(ip)
+	if err != nil {
+		errChan <- err
+	}
 }

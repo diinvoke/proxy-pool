@@ -5,6 +5,8 @@ import (
 	"io/ioutil"
 	"strconv"
 
+	"sync"
+
 	"github.com/Agzdjy/proxy-pool/spider"
 	"github.com/Agzdjy/proxy-pool/storage"
 	"github.com/go-redis/redis"
@@ -45,5 +47,12 @@ func initStorage(configPath string) storage.Storage {
 
 func initSpider(stor storage.Storage) {
 	var ip181 spider.Spider = &spider.Ip181{}
-	ip181.Do("http://www.ip181.com/", stor)
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		ip181.Do("http://www.ip181.com/", stor)
+		wg.Done()
+	}()
+
+	wg.Wait()
 }

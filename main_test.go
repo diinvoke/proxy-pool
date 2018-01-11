@@ -29,3 +29,7 @@ func TestCheck(t *testing.T) {
 	}
 
 }
+
+func TestRefreshData(t *testing.T) {
+	RefreshData()
+}

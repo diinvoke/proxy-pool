@@ -72,7 +72,7 @@ type DemoSpider struct{}
 // implements Spider interface
 var _ Spider = &DemoSpider{}
 
-func (demo *DemoSpider) Do(url string, store storage.Storage) (count int, err error) {
+func (demo *DemoSpider) Do(url string, store storage.Storage) error {
 	// do something
 }
 

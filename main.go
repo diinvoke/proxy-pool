@@ -1,22 +1,30 @@
 package proxypool
 
 import (
+	"time"
+
 	"github.com/Agzdjy/proxy-pool/model"
 	"github.com/Agzdjy/proxy-pool/storage"
 	"github.com/Agzdjy/proxy-pool/util"
 )
 
-var stor storage.Storage = nil
+var store storage.Storage = nil
 
 // init storage and spider
 func InitData(configPath string) {
-	stor = initStorage(configPath)
-	initSpider(stor)
+	store = initStorage(configPath)
+	initSpider(store)
+	ticker := time.NewTicker(3 * time.Minute)
+	go func() {
+		for _ = range ticker.C {
+			initSpider(store)
+		}
+	}()
 }
 
 // Range one proxy ip
 func Range(protocol string) *model.IP {
-	ip, err := stor.RangeOne(protocol)
+	ip, err := store.RangeOne(protocol)
 	if err != nil {
 		return nil
 	}
@@ -30,5 +38,9 @@ func Check(proxy string) bool {
 
 // Del failure proxy
 func Del(ip *model.IP) bool {
-	return stor.Del(ip)
+	return store.Del(ip)
+}
+
+func RefreshData() {
+	initSpider(store)
 }
