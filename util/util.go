@@ -2,6 +2,8 @@ package util
 
 import (
 	"crypto/tls"
+	"encoding/json"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"time"
@@ -45,4 +47,18 @@ func HttpGet(url string) (*http.Response, error) {
 	}
 
 	return resp, nil
+}
+
+func ReadJson(jsonPath string) map[string]string {
+	jsonMap := map[string]string{}
+	bytes, err := ioutil.ReadFile(jsonPath)
+	if err != nil {
+		panic("config is undefined")
+	}
+
+	err = json.Unmarshal(bytes, &jsonMap)
+	if err != nil {
+		panic("json format error")
+	}
+	return jsonMap
 }

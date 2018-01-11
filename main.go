@@ -12,8 +12,9 @@ var store storage.Storage = nil
 
 // init storage and spider
 func InitData(configPath string) {
-	store = initStorage(configPath)
+	store = getStorage(configPath)
 	initSpider(store)
+
 	ticker := time.NewTicker(3 * time.Minute)
 	go func() {
 		for _ = range ticker.C {

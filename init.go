@@ -1,58 +1,53 @@
 package proxypool
 
 import (
-	"encoding/json"
-	"io/ioutil"
 	"strconv"
 
 	"sync"
 
 	"github.com/Agzdjy/proxy-pool/spider"
 	"github.com/Agzdjy/proxy-pool/storage"
+	"github.com/Agzdjy/proxy-pool/util"
 	"github.com/go-redis/redis"
 )
 
-func readJson(configPath string) map[string]string {
-	jsonData := map[string]string{}
-	bytes, err := ioutil.ReadFile(configPath)
-	if err != nil {
-		panic("config is undefined")
-	}
+func getStorage(configPath string) storage.Storage {
+	var store storage.Storage
 
-	err = json.Unmarshal(bytes, &jsonData)
-	if err != nil {
-		panic("json format error")
-	}
-	return jsonData
-}
+	config := util.ReadJson(configPath)
+	storeType := config["store"]
 
-func initStorage(configPath string) storage.Storage {
-	config := readJson(configPath)
-	store := config["store"]
-	var stor storage.Storage
-
-	switch store {
+	switch storeType {
 	case "redis":
 		db, _ := strconv.Atoi(config["db"])
 		addr := config["address"]
 		password := config["password"]
-		stor = storage.NewRedisClient(&redis.Options{
+		store = storage.NewRedisClient(&redis.Options{
 			Addr:     addr,
 			Password: password,
 			DB:       db,
 		})
+	default:
+		panic("unknown store type")
 	}
-	return stor
+	return store
 }
 
-func initSpider(stor storage.Storage) {
-	var ip181 spider.Spider = &spider.Ip181{}
+var spiderSource = map[string]spider.Spider{
+	"http://www.ip181.com/": &spider.Ip181{},
+}
+
+func initSpider(store storage.Storage) {
 	var wg sync.WaitGroup
-	wg.Add(1)
-	go func() {
-		ip181.Do("http://www.ip181.com/", stor)
-		wg.Done()
-	}()
+
+	for url, spider := range spiderSource {
+		wg.Add(1)
+		go func() {
+			spider.Do(url, store)
+			wg.Done()
+		}()
+
+	}
 
 	wg.Wait()
 }
