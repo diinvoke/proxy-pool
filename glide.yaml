@@ -1,8 +1,0 @@
-package: github.com/Agzdjy/proxy-pool
-import:
-- package: github.com/Agzdjy/proxy-pool
-  subpackages:
-  - model
-  - storage
-- package: github.com/PuerkitoBio/goquery
-- package: github.com/go-redis/redis
