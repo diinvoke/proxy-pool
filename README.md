@@ -17,17 +17,6 @@ dep ensure
 
 ### 使用
 
-#### 添加存储配置文件config.json
-
-```json
-{
-  "store": "redis",
-  "address": "127.0.0.1:6379",
-  "password": "",
-  "db": "0"
-}
-```
-
 #### demo
 
 ```go
