@@ -1,17 +1,16 @@
 package storage
 
 import (
-	"github.com/Agzdjy/proxy-pool/model"
-	"github.com/go-redis/redis"
+	"github.com/diinvoke/proxy-pool/model"
 )
 
-type Storage interface {
+type IStorage interface {
 	Save(ip *model.IP) error
 	Del(ip *model.IP) bool
-	RangeOne(protocol string) (ip *model.IP, err error)
+	Random(protocol model.Protocol) (*model.IP, error)
 	Close() error
 }
 
-func NewRedisClient(options *redis.Options) *Redis {
-	return &Redis{client: redis.NewClient(options)}
+func GetStorage() IStorage {
+	return NewLocalCache()
 }

@@ -1,9 +1,7 @@
 package spider
 
-import (
-	"github.com/Agzdjy/proxy-pool/storage"
-)
-
-type Spider interface {
-	Do(url string, store storage.Storage) error
+type ISpider interface {
+	Do() error
+	LoadCount() int32
+	Name() string
 }

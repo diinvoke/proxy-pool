@@ -5,15 +5,15 @@ ip 代理池
 ### 下载安装
 
 ```shell
-go get github.com/Agzdjy/proxy-pool
+go get github.com/diinvoke/proxy-pool
 ```
 
 ### 安装依赖
 
 ```shell
-glide install
+dep ensure
 ```
-[glide](https://github.com/Masterminds/glide)介绍
+[dep](https://golang.github.io/dep/docs/introduction.html)介绍
 
 ### 使用
 
@@ -33,21 +33,18 @@ glide install
 ```go
 
 import (
-	"github.com/Agzdjy/proxy-pool"
-	"github.com/Agzdjy/proxy-pool/model"
+	"github.com/diinvoke/proxy-pool"
+	"github.com/diinvoke/proxy-pool/model"
 )
 
-func init() {
-	proxypool.InitData("./config.json")
-}
-
-func GetOne() *model.IP {
+func Random() *model.IP {
 	rangeIp := proxypool.Range("https")
-	proxyUrl := proxyIp.Protocol + "://" + proxyIp.Address + ":" + proxyIp.Port
 	
-	if !proxypool.Check(proxyUrl) {
-		return GetOne()
-	}
+	// if need check
+	// proxyUrl := proxyIp.Protocol + "://" + proxyIp.Address + ":" + proxyIp.Port
+	// if !proxypool.Check(proxyUrl) {
+		// return Random()
+	// }
 	
 	return rangeIp
 }
@@ -64,29 +61,32 @@ func Check(proxy string) bool {
 
 ```go
 import (
-	"github.com/Agzdjy/proxy-pool/storage"
+	"github.com/diinvoke/proxy-pool/storage"
 )
 
 type DemoSpider struct{}
 
-// implements Spider interface
-var _ Spider = &DemoSpider{}
+func NewDemoSpider() ISpider {
+	return &DemoSpider{}
+}
 
-func (demo *DemoSpider) Do(url string, store storage.Storage) error {
+// implements Spider interface
+var _ ISpider = &DemoSpider{}
+
+func (demo *DemoSpider) Do() error {
 	// do something
 }
 
 ```
 
-#### 在``init.go``中初始化抓取
+#### 在``init.go``中添加或者替换实现
 
 ```go
-import "github.com/Agzdjy/proxy-pool/spider"
+import "github.com/diinvoke/proxy-pool/spider"
 
-func initSpider(stor storage.Storage) {
-
-	// do something
-	&spider.DemoSpider{}.Do(demoUrl, stor)
+spiders := []spider.ISpider{
+	spider.NewIP181(store),
+	spider.NewDemoSpider()
 }
 ```
 
@@ -97,12 +97,16 @@ func initSpider(stor storage.Storage) {
 ```go
 
 import (
-    "github.com/Agzdjy/proxy-pool/model"
+    "github.com/diinvoke/proxy-pool/model"
 )
 
 type DemoStorage struct{}
 // implements Storage interface
-var _ Storage = &DemoStorage()
+var _ IStorage = &DemoStorage()
+
+func NewDemoStorage() IStorage {
+	return &DemoStorage{}
+}
 
 func (d *DemoStorage) Save(ip *model.IP) error {
 	// do something
@@ -112,7 +116,7 @@ func (d *DemoStorage) Del(ip *model.IP) bool {
 	// do something
 }
 
-func (d *DemoStorage) RangeOne(protocol string) (ip *model.IP, err error) {
+func (d *DemoStorage) Random(protocol model.Protocol) (ip *model.IP, err error) {
 	// do something
 }
 
@@ -123,21 +127,10 @@ func (d *DemoStorage) Close() error {
 
 ```
 
-#### 在``init.go``中初始化存储
+#### 替换 ``storage/storage.go GetStorage 返回值``
 
 ```go
-
-import "github.com/Agzdjy/proxy-pool/storage"
-
-func initStorage(configPath string) storage.Storage {
-	config := readJson(configPath)
-	store := config["store"]
-	var stor storage.Storage
-
-	switch store {
-	case "DemoStorage":
-		// do something
-	}
-	return stor
+func GetStorage() IStorage {
+	return NewDemoStorage()
 }
 ```

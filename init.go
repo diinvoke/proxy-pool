@@ -1,53 +1,45 @@
 package proxypool
 
 import (
-	"strconv"
-
+	"fmt"
 	"sync"
+	"time"
 
-	"github.com/Agzdjy/proxy-pool/spider"
-	"github.com/Agzdjy/proxy-pool/storage"
-	"github.com/Agzdjy/proxy-pool/util"
-	"github.com/go-redis/redis"
+	"github.com/diinvoke/proxy-pool/spider"
+	"github.com/diinvoke/proxy-pool/storage"
 )
 
-func getStorage(configPath string) storage.Storage {
-	var store storage.Storage
-
-	config := util.ReadJson(configPath)
-	storeType := config["store"]
-
-	switch storeType {
-	case "redis":
-		db, _ := strconv.Atoi(config["db"])
-		addr := config["address"]
-		password := config["password"]
-		store = storage.NewRedisClient(&redis.Options{
-			Addr:     addr,
-			Password: password,
-			DB:       db,
-		})
-	default:
-		panic("unknown store type")
+func initProxyPool(store storage.IStorage) {
+	spiders := []spider.ISpider{
+		spider.NewIP181(store),
 	}
-	return store
-}
 
-var spiderSource = map[string]spider.Spider{
-	"http://www.ip181.com/": &spider.Ip181{},
-}
-
-func initSpider(store storage.Storage) {
 	var wg sync.WaitGroup
+	wg.Add(len(spiders))
 
-	for url, spider := range spiderSource {
-		wg.Add(1)
-		go func() {
-			spider.Do(url, store)
-			wg.Done()
-		}()
+	for _, sp := range spiders {
+		go func(group *sync.WaitGroup, iSpider spider.ISpider) {
+			err := iSpider.Do()
+			if err != nil {
+				fmt.Println("name, load failed, err", iSpider.Name(), err)
+			}
+			fmt.Println("name:, load success:", iSpider.Name(), iSpider.LoadCount())
 
+			group.Done()
+		}(&wg, sp)
 	}
 
 	wg.Wait()
+}
+
+func autoLoad() {
+	ticker := time.NewTicker(3 * time.Minute)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ticker.C:
+			initProxyPool(store)
+		}
+	}
 }

@@ -3,22 +3,26 @@ package spider
 import (
 	"testing"
 
-	"github.com/Agzdjy/proxy-pool/storage"
-	"github.com/go-redis/redis"
+	"github.com/diinvoke/proxy-pool/model"
+	"github.com/diinvoke/proxy-pool/storage"
 )
 
-var spider Spider = &Ip181{}
-
 func TestDo(t *testing.T) {
-	store := storage.NewRedisClient(&redis.Options{
-		Addr:     "127.0.0.1:6379",
-		Password: "",
-		DB:       0,
-	})
-	err := spider.Do("http://www.ip181.com/", store)
+	storage := storage.NewLocalCache()
+	ip181 := NewIP181(storage)
+	err := ip181.Do()
+
+	t.Logf("count:%d", ip181.LoadCount())
 
 	if err != nil {
 		t.Error("spider do error", err)
 		return
 	}
+	ip, _ := storage.Random(model.ProtocolHttp)
+	if ip == nil {
+		t.Errorf("got nil")
+		return
+	}
+
+	t.Logf("%s://%s:%s", ip.Protocol, ip.Address, ip.Port)
 }

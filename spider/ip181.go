@@ -1,107 +1,104 @@
 package spider
 
 import (
-	"net/http"
-	"strings"
-	"time"
-
-	"github.com/Agzdjy/proxy-pool/model"
-
-	"sync"
-
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"sync"
+	"sync/atomic"
 
-	"github.com/Agzdjy/proxy-pool/storage"
-	"github.com/Agzdjy/proxy-pool/util"
-	"github.com/PuerkitoBio/goquery"
+	"github.com/diinvoke/proxy-pool/model"
+	"github.com/diinvoke/proxy-pool/storage"
 )
 
-type Ip181 struct{}
+const (
+	url = "http://www.ip181.com/"
+)
 
-var _ Spider = &Ip181{}
+type ip181Result struct {
+	Position string `json:"position"`
+	Port     string `json:"port"`
+	IP       string `json:"ip"`
+}
 
-func (ip181 *Ip181) Do(url string, store storage.Storage) error {
-	resp, err := util.HttpGet(url)
+type ip181 struct {
+	ErrorCode string         `json:"ERRORCODE"`
+	Results   []*ip181Result `json:"RESULT"`
+}
+
+type Ip181 struct {
+	storage storage.IStorage
+	count   int32
+}
+
+var _ ISpider = &Ip181{}
+
+func NewIP181(storage storage.IStorage) ISpider {
+	return &Ip181{
+		storage: storage,
+	}
+}
+
+func (i *Ip181) Do() error {
+	ips, err := i.getIPs()
+
+	i.save(ips)
+
+	return err
+}
+
+func (i *Ip181) LoadCount() int32 {
+	return atomic.LoadInt32(&i.count)
+}
+
+func (i *Ip181) Name() string {
+	return "IP181"
+}
+
+func (i *Ip181) getIPs() ([]*ip181Result, error) {
+	resp, err := http.Get(url)
+	if err != nil || resp == nil || resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("get resp error:%s", err)
+	}
+	defer resp.Body.Close()
+
+	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	errorChan := make(chan error)
-	doneChan := make(chan struct{})
-
-	go func() {
-		filterRecord(resp, store, errorChan, doneChan)
-	}()
-
-	timeout := time.After(2 * time.Second)
-
-	select {
-	case <-doneChan:
-		fmt.Println("init ip181 success")
-		return nil
-	case err := <-errorChan:
-		return err
-	case <-timeout:
-		fmt.Println("init ip181 timeout")
-		return nil
+	var result ip181
+	if err = json.Unmarshal(b, &result); err != nil {
+		return nil, err
 	}
-	return nil
+
+	return result.Results, nil
 }
 
-func filterRecord(resp *http.Response, store storage.Storage, errChan chan error, done chan struct{}) {
-	var wg sync.WaitGroup
-
-	doc, err := goquery.NewDocumentFromResponse(resp)
-	if err != nil {
-		errChan <- err
-	}
-
-	trs := doc.Find("tbody").Find("tr").Not("tr.active")
-
-	trs.Each(func(index int, tr *goquery.Selection) {
-		td := tr.Find("td")
-		ipModels := getIpModels(td)
-
-		wg.Add(len(ipModels))
-		go checkAndSave(ipModels[0], store, &wg, errChan)
-		if len(ipModels) > 1 {
-			go checkAndSave(ipModels[1], store, &wg, errChan)
-		}
-	})
-
-	wg.Wait()
-	done <- struct{}{}
-}
-
-func getIpModels(td *goquery.Selection) []*model.IP {
-	protocol := td.Eq(3).Text()
-	protocols := strings.Split(protocol, ",")
-
-	ipModels := []*model.IP{genIpModel(td, protocols[0])}
-	if len(protocols) > 1 {
-		ipModels = append(ipModels, genIpModel(td, protocols[1]))
-	}
-
-	return ipModels
-}
-
-func genIpModel(selection *goquery.Selection, protocol string) *model.IP {
-	return &model.IP{
-		Address:  selection.Eq(0).Text(),
-		Port:     selection.Eq(1).Text(),
-		Protocol: strings.ToLower(protocol),
-	}
-}
-
-func checkAndSave(ip *model.IP, store storage.Storage, wg *sync.WaitGroup, errChan chan error) {
-	defer wg.Done()
-
-	checkUrl := ip.Protocol + "://" + ip.Address + ":" + ip.Port
-	if !util.Check(checkUrl) {
+func (i *Ip181) save(ips []*ip181Result) {
+	if len(ips) == 0 {
 		return
 	}
-	err := store.Save(ip)
-	if err != nil {
-		errChan <- err
+
+	var wg sync.WaitGroup
+	wg.Add(len(ips))
+
+	for _, ip := range ips {
+		go func(wgg *sync.WaitGroup, ipModel *model.IP) {
+			i.storage.Save(ipModel)
+			atomic.AddInt32(&i.count, 1)
+			wg.Done()
+		}(&wg, i.genIPModel(ip))
+	}
+
+	wg.Wait()
+}
+
+func (i *Ip181) genIPModel(ip *ip181Result) *model.IP {
+	return &model.IP{
+		Protocol: model.ProtocolHttp,
+		Address:  ip.IP,
+		Port:     ip.Port,
 	}
 }

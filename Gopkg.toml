@@ -25,14 +25,6 @@
 #   unused-packages = true
 
 
-[[constraint]]
-  name = "github.com/PuerkitoBio/goquery"
-  version = "1.5.0"
-
-[[constraint]]
-  name = "github.com/go-redis/redis"
-  version = "6.15.2"
-
 [prune]
   go-tests = true
   unused-packages = true
