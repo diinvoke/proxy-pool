@@ -10,7 +10,7 @@ import (
 )
 
 func initProxyPool(store storage.IStorage) {
-	spiders := []spider.ISpider{
+	spiders := []spider.Spider{
 		spider.NewIP181(store),
 	}
 
@@ -18,7 +18,7 @@ func initProxyPool(store storage.IStorage) {
 	wg.Add(len(spiders))
 
 	for _, sp := range spiders {
-		go func(group *sync.WaitGroup, iSpider spider.ISpider) {
+		go func(group *sync.WaitGroup, iSpider spider.Spider) {
 			err := iSpider.Do()
 			if err != nil {
 				fmt.Println("name, load failed, err", iSpider.Name(), err)

@@ -32,9 +32,9 @@ type Ip181 struct {
 	count   int32
 }
 
-var _ ISpider = &Ip181{}
+var _ Spider = &Ip181{}
 
-func NewIP181(storage storage.IStorage) ISpider {
+func NewIP181(storage storage.IStorage) Spider {
 	return &Ip181{
 		storage: storage,
 	}
@@ -86,7 +86,7 @@ func (i *Ip181) save(ips []*ip181Result) {
 
 	for _, ip := range ips {
 		go func(wgg *sync.WaitGroup, ipModel *model.IP) {
-			i.storage.Save(ipModel)
+			_ = i.storage.Save(ipModel)
 			atomic.AddInt32(&i.count, 1)
 			wg.Done()
 		}(&wg, i.genIPModel(ip))

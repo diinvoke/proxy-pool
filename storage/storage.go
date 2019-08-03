@@ -10,7 +10,3 @@ type IStorage interface {
 	Random(protocol model.Protocol) (*model.IP, error)
 	Close() error
 }
-
-func GetStorage() IStorage {
-	return NewLocalCache()
-}

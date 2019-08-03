@@ -9,7 +9,7 @@ import (
 var store storage.IStorage
 
 func init() {
-	store = storage.GetStorage()
+	store = storage.NewLocalCache()
 	initProxyPool(store)
 
 	go autoLoad()

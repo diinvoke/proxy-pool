@@ -1,6 +1,6 @@
 package spider
 
-type ISpider interface {
+type Spider interface {
 	Do() error
 	LoadCount() int32
 	Name() string
