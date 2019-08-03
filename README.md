@@ -11,9 +11,8 @@ go get github.com/diinvoke/proxy-pool
 ### 安装依赖
 
 ```shell
-dep ensure
+go mod tidy
 ```
-[dep](https://golang.github.io/dep/docs/introduction.html)介绍
 
 ### 使用
 
@@ -55,12 +54,12 @@ import (
 
 type DemoSpider struct{}
 
-func NewDemoSpider() ISpider {
+func NewDemoSpider() Spider {
 	return &DemoSpider{}
 }
 
 // implements Spider interface
-var _ ISpider = &DemoSpider{}
+var _ Spider = &DemoSpider{}
 
 func (demo *DemoSpider) Do() error {
 	// do something
@@ -116,10 +115,14 @@ func (d *DemoStorage) Close() error {
 
 ```
 
-#### 替换 ``storage/storage.go GetStorage 返回值``
+#### 替换 ``proxy_pool.go 中 store 值``
 
 ```go
-func GetStorage() IStorage {
-	return NewDemoStorage()
+func init() {
+	store = storage.NewDemoStorage()
+	initProxyPool(store)
+
+	go autoLoad()
 }
+
 ```
