@@ -1,7 +1,10 @@
 package spider
 
+import (
+	"github.com/mingcheng/proxypool/model"
+)
+
 type Spider interface {
-	Do() error
-	LoadCount() int32
+	Do() ([]*model.Proxy, error)
 	Name() string
 }
