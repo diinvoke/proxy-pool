@@ -2,6 +2,7 @@ package storage
 
 import (
 	"github.com/mingcheng/proxypool/model"
+	rpc "github.com/mingcheng/proxypool/protobuf"
 	"github.com/patrickmn/go-cache"
 	"sync"
 )
@@ -37,7 +38,8 @@ func (m *MemoryStorage) Del(proxy *model.Proxy) bool {
 	return true
 }
 
-func (*MemoryStorage) Random(protocol model.Protocol) (*model.Proxy, error) {
+// @TODO
+func (*MemoryStorage) Random(protocol rpc.Protocol) (*model.Proxy, error) {
 	return nil, nil
 }
 
