@@ -2,6 +2,7 @@ package spider
 
 import (
 	"github.com/mingcheng/proxypool/model"
+	rpc "github.com/mingcheng/proxypool/protobuf"
 	"io/ioutil"
 	"net/http"
 	"regexp"
@@ -36,16 +37,18 @@ func (i *IP89) Do() ([]*model.Proxy, error) {
 			continue
 		}
 
-		port, err := strconv.Atoi(address[1])
+		port, err := strconv.ParseUint(address[1], 10, 64)
 		if err != nil {
 			continue
 		}
 
 		results = append(results, &model.Proxy{
-			Address:  strings.TrimSpace(address[0]),
-			Port:     port,
-			Protocol: model.ProtocolHttp,
-			From:     i.Name(),
+			rpc.Proxy{
+				Address:  strings.TrimSpace(address[0]),
+				Port:     port,
+				Protocol: rpc.Protocol_HTTP,
+				From:     i.Name(),
+			},
 		})
 	}
 

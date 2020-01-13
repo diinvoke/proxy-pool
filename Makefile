@@ -1,6 +1,6 @@
 .PHONY: build clean test test-race
 
-VERSION=0.0.1
+VERSION=2.0.1
 BIN=proxypool
 DIR_SRC=./cmd
 
@@ -11,7 +11,7 @@ GOROOT=$(shell `which go` env GOROOT)
 GOPATH=$(shell `which go` env GOPATH)
 DOCKER_PUBLISH_TAG=docker.pkg.github.com/mingcheng/proxypool/proxypool:$(VERSION)
 
-build:$(DIR_SRC)/api.go
+build: protobuf $(DIR_SRC)/api.go
 	@$(GO) build $(GO_FLAGS) -o $(BIN) $(DIR_SRC)
 
 docker_image: clean
@@ -35,6 +35,12 @@ release:
 
 test-race:
 	@$(GO) test -race .
+
+protoc:
+	@[ -f $(shell go env GOPATH)/bin/protoc-gen-go ] || go get -u github.com/golang/protobuf/protoc-gen-go
+
+protobuf: protoc
+	protoc --go_out=plugins=grpc:. ./protobuf/proxypool.proto
 
 # clean all build result
 clean:

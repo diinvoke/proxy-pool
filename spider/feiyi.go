@@ -3,6 +3,7 @@ package spider
 import (
 	"github.com/antchfx/htmlquery"
 	"github.com/mingcheng/proxypool/model"
+	rpc "github.com/mingcheng/proxypool/protobuf"
 	"strconv"
 	"strings"
 )
@@ -30,16 +31,18 @@ func (i *Feiyi) Do() ([]*model.Proxy, error) {
 			continue
 		}
 
-		port, err := strconv.Atoi(htmlquery.InnerText(tdNode[1]))
+		port, err := strconv.ParseUint(htmlquery.InnerText(tdNode[1]), 10, 64)
 		if err != nil {
 			continue
 		}
 
 		results = append(results, &model.Proxy{
-			Address:  strings.TrimSpace(htmlquery.InnerText(tdNode[0])),
-			Port:     port,
-			Protocol: model.ProtocolFromString(htmlquery.InnerText(tdNode[3])),
-			From:     i.Name(),
+			rpc.Proxy{
+				Address:  strings.TrimSpace(htmlquery.InnerText(tdNode[0])),
+				Port:     port,
+				Protocol: model.ProtocolFromString(htmlquery.InnerText(tdNode[3])),
+				From:     i.Name(),
+			},
 		})
 	}
 

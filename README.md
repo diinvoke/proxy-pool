@@ -18,6 +18,7 @@
 
 ## 更新日志
 
+* `20200110` 增加 RPC（使用 grpc）接口调用
 * `20191217` 初始化版本
 * `20191215` 扩展原有的项目，并重写部分代码，感谢 @diinvoke 的原项目
 
@@ -42,7 +43,9 @@ go get github.com/mingcheng/proxypool
 
 ### Docker 方式部署
 
-// ...
+```shell
+docker run -p 8080:8080 docker.pkg.github.com/mingcheng/proxypool/proxypool:lastest
+```
 
 ## 使用
 
@@ -62,6 +65,10 @@ go get github.com/mingcheng/proxypool
 
 * `/all` 所有可用的代理列表
 * `/random` 随机获取一个可用的代理
+
+### RPC 接口
+
+调用方式请参考 `example/rpc_client.go` 文件
 
 ## 扩展代理来源
 
