@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/mingcheng/proxypool/model"
@@ -29,14 +30,21 @@ func (p ProxyPoolRPCServer) Random(context.Context, *empty.Empty) (*rpc.Proxy, e
 	return &proxypool.Random().Proxy, nil
 }
 
-func (p ProxyPoolRPCServer) All(_ *empty.Empty, all rpc.ProxyPool_AllServer) error {
-	for _, proxy := range proxypool.All() {
-		if err := all.Send(&proxy.Proxy); err != nil {
-			return err
-		}
-	}
+func (p ProxyPoolRPCServer) All(context.Context, *empty.Empty) (*rpc.Proxies, error) {
+	proxies := proxypool.All()
 
-	return nil
+	if len(proxies) > 0 {
+		var rpcProxies = &rpc.Proxies{
+			Counts: uint64(len(proxies)),
+		}
+		for _, v := range proxies {
+			rpcProxies.Proxies = append(rpcProxies.Proxies, &v.Proxy)
+		}
+
+		return rpcProxies, nil
+	} else {
+		return nil, fmt.Errorf("no suitable proxy found")
+	}
 }
 
 func main() {
@@ -62,7 +70,17 @@ func main() {
 	r.GET("/all", func(c *gin.Context) {
 		proxies := proxypool.All()
 		if len(proxies) > 0 {
-			c.JSON(http.StatusOK, proxies)
+			var rpcProxies = &rpc.Proxies{
+				Counts: uint64(len(proxies)),
+			}
+			for _, v := range proxies {
+				rpcProxies.Proxies = append(rpcProxies.Proxies, &v.Proxy)
+			}
+
+			m := &jsonpb.Marshaler{}
+			s, _ := m.MarshalToString(rpcProxies)
+			c.Header("Content-Type", "application/json")
+			c.String(http.StatusOK, s)
 		} else {
 			c.String(http.StatusNotFound, "no suitable proxy found")
 		}
@@ -72,6 +90,7 @@ func main() {
 		if proxies := proxypool.Random(); proxies != nil {
 			m := &jsonpb.Marshaler{}
 			s, _ := m.MarshalToString(&proxies.Proxy)
+			c.Header("Content-Type", "application/json")
 			c.String(http.StatusOK, s)
 		} else {
 			c.String(http.StatusNotFound, "no suitable proxy found")

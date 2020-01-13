@@ -6,7 +6,6 @@ import (
 	"github.com/golang/protobuf/ptypes/empty"
 	rpc "github.com/mingcheng/proxypool/protobuf"
 	"google.golang.org/grpc"
-	"io"
 	"log"
 	"time"
 )
@@ -30,18 +29,9 @@ func main() {
 		fmt.Println(proxy)
 	}
 
-	if proxies, err := client.All(ctx, &empty.Empty{}); err != nil {
+	if proxies, err := client.All(context.TODO(), &empty.Empty{}); err != nil {
 		fmt.Println(err)
 	} else {
-		for {
-			if proxy, err := proxies.Recv(); err != nil {
-				if err == io.EOF {
-					break
-				}
-				fmt.Println(err)
-			} else {
-				fmt.Println(proxy)
-			}
-		}
+		fmt.Println(proxies)
 	}
 }
