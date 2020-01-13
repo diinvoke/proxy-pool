@@ -4,6 +4,8 @@ import (
 	"crypto/tls"
 	"fmt"
 	simpleJSON "github.com/bitly/go-simplejson"
+	"github.com/golang/protobuf/ptypes"
+	rpc "github.com/mingcheng/proxypool/protobuf"
 	"log"
 	"net/http"
 	"net/url"
@@ -11,35 +13,43 @@ import (
 	"time"
 )
 
-type Protocol string
+//type Protocol string
 
 const (
-	ProtocolHttps = "https"
-	ProtocolHttp  = "http"
-	ProtocolSocks = "socks"
+	ProtocolHttps   = "https"
+	ProtocolHttp    = "http"
+	ProtocolSocks   = "socks"
+	ProtocolUnknown = "unknown"
 )
 
-func ProtocolFromString(s string) Protocol {
+func ProtocolFromString(s string) rpc.Protocol {
 	s = strings.TrimSpace(strings.ToLower(s))
 	switch s {
-	case ProtocolHttp, ProtocolHttps, ProtocolSocks:
-		return Protocol(s)
+	case ProtocolHttp:
+		return rpc.Protocol_HTTP
+	case ProtocolHttps:
+		return rpc.Protocol_HTTPS
+	case ProtocolSocks:
+		return rpc.Protocol_SOCKS
 	}
 
-	return Protocol("")
+	return rpc.Protocol_UNKNOWN
 }
 
-func ProtocolToString(protocol Protocol) string {
-	return string(protocol)
+func ProtocolToString(protocol rpc.Protocol) string {
+	switch protocol {
+	case rpc.Protocol_HTTPS:
+		return ProtocolHttps
+	case rpc.Protocol_HTTP:
+		return ProtocolHttp
+	case rpc.Protocol_SOCKS:
+		return ProtocolSocks
+	}
+	return ProtocolUnknown
 }
 
 type Proxy struct {
-	Address   string    `json:"address"`
-	Port      int       `json:"port"`
-	Protocol  Protocol  `json:"protocol"`
-	LastCheck time.Time `json:"last_check"`
-	Speed     int64     `json:"speed"`
-	From      string    `json:"from"`
+	rpc.Proxy
 }
 
 func (i *Proxy) Equal(ip *Proxy) bool {
@@ -57,7 +67,7 @@ func (i *Proxy) Check() (bool, error) {
 	log.Printf("start check %s", i.String())
 	begin := time.Now()
 
-	i.LastCheck = time.Now()
+	i.LastCheck, _ = ptypes.TimestampProto(time.Now())
 	proxyUrl, err := url.Parse(i.String())
 	if err != nil {
 		return false, fmt.Errorf("invalid schema format, %s", err)
@@ -85,7 +95,7 @@ func (i *Proxy) Check() (bool, error) {
 	}
 
 	// mark speeds
-	i.Speed = time.Now().Sub(begin).Nanoseconds()
+	i.Speed = uint64(time.Now().Sub(begin).Nanoseconds())
 	log.Printf("check finished, %s is valid proxy", i.String())
 	return true, nil
 }
