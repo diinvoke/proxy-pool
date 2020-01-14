@@ -1,21 +1,27 @@
 package spider
 
 import (
-	"github.com/mingcheng/proxypool/model"
-	rpc "github.com/mingcheng/proxypool/protobuf"
 	"io/ioutil"
 	"net/http"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/mingcheng/proxypool/model"
+	rpc "github.com/mingcheng/proxypool/protobuf"
 )
 
 type IP89 struct {
 }
 
 func (i *IP89) Do() ([]*model.Proxy, error) {
-	var ExprIP = regexp.MustCompile(`((25[0-5]|2[0-4]\d|((1\d{2})|([1-9]?\d)))\.){3}(25[0-5]|2[0-4]\d|((1\d{2})|([1-9]?\d)))\:([0-9]+)`)
-	pollURL := "http://www.89ip.cn/tqdl.html?api=1&num=100"
+	const (
+		pollURL = "http://www.89ip.cn/tqdl.html?api=1&num=100"
+	)
+
+	var (
+		ExprIP = regexp.MustCompile(`((25[0-5]|2[0-4]\d|((1\d{2})|([1-9]?\d)))\.){3}(25[0-5]|2[0-4]\d|((1\d{2})|([1-9]?\d)))\:([0-9]+)`)
+	)
 
 	resp, err := http.Get(pollURL)
 	if err != nil {

@@ -2,18 +2,16 @@ package spider
 
 import (
 	"fmt"
-	"github.com/mingcheng/proxypool/controller"
 	"sync"
 	"time"
+
+	"github.com/mingcheng/proxypool/controller"
 )
 
 func InitSpider(d time.Duration, proxyChecker controller.Checker) *time.Ticker {
 	// @TODO
 	spiders := []Spider{
-		&Feiyi{
-			URL:   "http://www.feiyiproxy.com/?page_id=1457",
-			Query: "//div[contains(@class, 'et_pb_code_1')]//tr",
-		},
+		&Feiyi{},
 		&IP89{},
 	}
 

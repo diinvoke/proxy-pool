@@ -1,25 +1,31 @@
 package spider
 
 import (
+	"strconv"
+	"strings"
+
 	"github.com/antchfx/htmlquery"
 	"github.com/mingcheng/proxypool/model"
 	rpc "github.com/mingcheng/proxypool/protobuf"
-	"strconv"
-	"strings"
 )
 
 type Feiyi struct {
-	URL   string
-	Query string
+	// URL   string
+	// Query string
 }
 
 func (i *Feiyi) Do() ([]*model.Proxy, error) {
-	doc, err := htmlquery.LoadURL(i.URL)
+	const (
+		_URL   = "http://www.feiyiproxy.com/?page_id=1457"
+		_Query = "//div[contains(@class, 'et_pb_code_1')]//tr"
+	)
+
+	doc, err := htmlquery.LoadURL(_URL)
 	if err != nil {
 		return nil, err
 	}
 
-	trNodes, err := htmlquery.QueryAll(doc, i.Query)
+	trNodes, err := htmlquery.QueryAll(doc, _Query)
 	if err != nil {
 		return nil, err
 	}
@@ -50,5 +56,5 @@ func (i *Feiyi) Do() ([]*model.Proxy, error) {
 }
 
 func (i *Feiyi) Name() string {
-	return "http://www.feiyiproxy.com/"
+	return "feiyiproxy.com"
 }

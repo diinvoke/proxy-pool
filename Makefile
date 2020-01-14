@@ -11,7 +11,7 @@ GOROOT=$(shell `which go` env GOROOT)
 GOPATH=$(shell `which go` env GOPATH)
 DOCKER_PUBLISH_TAG=docker.pkg.github.com/mingcheng/proxypool/proxypool:$(VERSION)
 
-build: protobuf $(DIR_SRC)/api.go
+build: $(DIR_SRC)/api.go
 	@$(GO) build $(GO_FLAGS) -o $(BIN) $(DIR_SRC)
 
 docker_image: clean
