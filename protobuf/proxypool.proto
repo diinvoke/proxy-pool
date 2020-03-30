@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package rpc;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
+enum Protocol {
+    UNKNOWN = 0;
+    HTTPS = 1;
+    SOCKS = 2;
+    HTTP = 3;
+}
+
+message Proxy {
+    string Address = 1 [json_name = "address"];
+    uint64 Port = 2 [json_name = "port"];
+
+    Protocol Protocol = 3 [json_name = "protocol"];
+    google.protobuf.Timestamp LastCheck = 4 [json_name = "last_check"];
+
+    uint64 Speed = 5 [json_name = "speed"];
+    string From = 6 [json_name = "from"];
+}
+
+message Proxies {
+    uint64 Counts = 1 [json_name = "counts"];
+    repeated Proxy proxies = 2 [json_name = "proxies"];
+}
+
+service ProxyPool {
+    rpc Add (Proxy) returns (google.protobuf.Empty);
+    rpc Random (google.protobuf.Empty) returns (Proxy);
+    rpc All (google.protobuf.Empty) returns (Proxies);
+}

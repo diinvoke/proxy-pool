@@ -1,12 +1,14 @@
 package storage
 
 import (
-	"github.com/diinvoke/proxy-pool/model"
+	"github.com/mingcheng/proxypool/model"
+	rpc "github.com/mingcheng/proxypool/protobuf"
 )
 
 type IStorage interface {
-	Save(ip *model.IP) error
-	Del(ip *model.IP) bool
-	Random(protocol model.Protocol) (*model.IP, error)
+	Save(proxy *model.Proxy) error
+	Del(proxy *model.Proxy) bool
+	Random(protocol rpc.Protocol) (*model.Proxy, error)
+	All() []*model.Proxy
 	Close() error
 }

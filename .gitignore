@@ -1,3 +1,31 @@
-vendor
-*/debug.test
-.idea
+# Compiled Object files, Static and Dynamic libs (Shared Objects)
+*.o
+*.a
+*.so
+
+# Folders
+_obj
+_test
+.vagrant
+releases
+tmp
+.idea/
+vendor/
+/dist
+
+# Architecture specific extensions/prefixes
+trace.out
+*.out
+.DS_Store
+_testmain.go
+
+*.exe
+*.test
+*.prof
+profile.cov
+coverage.html
+/go.sum
+
+# Emacs backup files
+*~
+.*~
